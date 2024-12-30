@@ -1,4 +1,4 @@
-# Script turning mpv to a lightweight image viewer while supporting common interactions
+# Scripts turning mpv to a lightweight image viewer while supporting common interactions
 ## 1. Install the autoload script from [mpv repo](https://github.com/mpv-player/mpv/blob/master/TOOLS/lua/autoload.lua)
 ## 2. Place two scripts into the /scripts dir
 ## 3. Supported interactions:
