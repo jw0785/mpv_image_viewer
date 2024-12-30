@@ -18,3 +18,4 @@ screenshot-high-bit-depth=no
 pause=yes
 osc=no
 ```
+## Note: it only activates on image files.
