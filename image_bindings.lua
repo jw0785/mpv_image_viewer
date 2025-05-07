@@ -33,6 +33,41 @@ local function is_in_center_strip(x, window_width)
     return x >= center_start and x <= center_end
 end
 
+local function fitwidth_topalign()
+	local window_width, window_height = mp.get_osd_size()
+	local video_width = mp.get_property_number("width")
+	local video_height = mp.get_property_number("height")
+	if window_width >= video_width and window_height >= video_height then
+		mp.set_property("video-unscaled", "no")
+		local window_ratio	= window_width / window_height
+		local video_ratio = video_width / video_height
+		if window_ratio > video_ratio then
+			-- when i try to fit the video, it overflows, when i try to overflow, it... but it works, so it's good
+			video_height = window_height
+			video_width = video_height * video_ratio
+		elseif window_ratio < video_ratio then
+			video_width = window_width
+			video_height = video_width / video_ratio
+		else
+			return
+		end
+	elseif video_width < window_width and video_height > window_height then
+		mp.set_property("video-unscaled", "yes")
+		local video_ratio = video_width / video_height
+		video_width = window_width /1.5 -- magical threshold, i don't know why it can't scale any larger
+		video_height = video_width / video_ratio
+	end
+	local scale = window_width / video_width - 1
+	local scaled_video_height = video_height * (1+scale)
+	local pan_y = (scaled_video_height - window_height) / (2 * scaled_video_height) 
+	mp.set_property("video-pan-y", pan_y)
+	mp.set_property("video-zoom", scale)
+	mp.osd_message(string.format(
+	"Video: %dx%d, Window: %dx%d\nScale: %.3f\nScaled height: %.1f\nPan Y: %.3f",
+	video_width, video_height, window_width, window_height,
+	scale, scaled_video_height, pan_y), 4)
+end
+
 local bindings
 
 local function apply_bindings()
@@ -85,15 +120,87 @@ bindings = {
 		end
 		mp.command("playlist-next ; show-text \"${playlist-pos-1}/${playlist-count}\"")
 	end},
-	{"MBTN_RIGHT", "playlist-prev ; show-text \"${playlist-pos-1}/${playlist-count}\""},
-	{"d", "playlist-next ; show-text \"${playlist-pos-1}/${playlist-count}\""},
-	{"a", "playlist-prev ; show-text \"${playlist-pos-1}/${playlist-count}\""},
-	{"w", "playlist-next ; show-text \"${playlist-pos-1}/${playlist-count}\""},
-	{"s", "playlist-prev ; show-text \"${playlist-pos-1}/${playlist-count}\""},
-	{"LEFT", "playlist-prev ; show-text \"${playlist-pos-1}/${playlist-count}\""},
-	{"RIGHT", "playlist-next ; show-text \"${playlist-pos-1}/${playlist-count}\""},
-	{"UP", "playlist-next ; show-text \"${playlist-pos-1}/${playlist-count}\""},
-	{"DOWN", "playlist-prev ; show-text \"${playlist-pos-1}/${playlist-count}\""},
+	{"MBTN_RIGHT", function()
+		local window_width, window_height = mp.get_osd_size()
+		local video_width = mp.get_property_number("width")
+		local video_height = mp.get_property_number("height")
+		mp.command("playlist-prev ; show-text \"${playlist-pos-1}/${playlist-count}\"")
+		if video_height > window_height then
+			fitwidth_topalign()
+		end
+	end},
+	{"d", function()
+		local window_width, window_height = mp.get_osd_size()
+		local video_width = mp.get_property_number("width")
+		local video_height = mp.get_property_number("height")
+		mp.command("playlist-next ; show-text \"${playlist-pos-1}/${playlist-count}\"")
+		if video_height > window_height then
+			fitwidth_topalign()
+		end
+	end},
+	{"a", function()
+		local window_width, window_height = mp.get_osd_size()
+		local video_width = mp.get_property_number("width")
+		local video_height = mp.get_property_number("height")
+		mp.command("playlist-prev ; show-text \"${playlist-pos-1}/${playlist-count}\"")
+		if video_height > window_height then
+			fitwidth_topalign()
+		end
+	end},
+	{"w", function()
+		local window_width, window_height = mp.get_osd_size()
+		local video_width = mp.get_property_number("width")
+		local video_height = mp.get_property_number("height")
+		mp.command("playlist-next ; show-text \"${playlist-pos-1}/${playlist-count}\"")
+		if video_height > window_height then
+			fitwidth_topalign()
+		end
+	end},
+	{"s", function()
+		local window_width, window_height = mp.get_osd_size()
+		local video_width = mp.get_property_number("width")
+		local video_height = mp.get_property_number("height")
+		mp.command("playlist-prev ; show-text \"${playlist-pos-1}/${playlist-count}\"")
+		if video_height > window_height then
+			fitwidth_topalign()
+		end
+	end},
+	{"LEFT", function()
+		local window_width, window_height = mp.get_osd_size()
+		local video_width = mp.get_property_number("width")
+		local video_height = mp.get_property_number("height")
+		mp.command("playlist-prev ; show-text \"${playlist-pos-1}/${playlist-count}\"")
+		if video_height > window_height then
+			fitwidth_topalign()
+		end
+	end},
+	{"RIGHT", function()
+		local window_width, window_height = mp.get_osd_size()
+		local video_width = mp.get_property_number("width")
+		local video_height = mp.get_property_number("height")
+		mp.command("playlist-next ; show-text \"${playlist-pos-1}/${playlist-count}\"")
+		if video_height > window_height then
+			fitwidth_topalign()
+		end
+	end},
+	{"UP", function()
+		local window_width, window_height = mp.get_osd_size()
+		local video_width = mp.get_property_number("width")
+		local video_height = mp.get_property_number("height")
+		mp.command("playlist-next ; show-text \"${playlist-pos-1}/${playlist-count}\"")
+		if video_height > window_height then
+			fitwidth_topalign()
+		end
+	end},
+	{"DOWN", function()
+		local window_width, window_height = mp.get_osd_size()
+		local video_width = mp.get_property_number("width")
+		local video_height = mp.get_property_number("height")
+		mp.command("playlist-prev ; show-text \"${playlist-pos-1}/${playlist-count}\"")
+		if video_height > window_height then
+			fitwidth_topalign()
+		end
+	end},
 	{"PGUP", function()
 		local window_width, window_height = mp.get_osd_size()
 		local video_width = mp.get_property_number("width")
@@ -136,74 +243,8 @@ bindings = {
 	{"9", "ignore"},
 	{"/", "ignore"},
 	{"0", "set video-zoom 0 ; set video-pan-x 0 ; set video-pan-y 0 ; set video-rotate 0 ; show-text \"Reset Transformation\" ; set video-unscaled no"},
-	{"F", function()
-		local window_width, window_height = mp.get_osd_size()
-		local video_width = mp.get_property_number("width")
-		local video_height = mp.get_property_number("height")
-		if window_width >= video_width and window_height >= video_height then
-			mp.set_property("video-unscaled", "no")
-			local window_ratio	= window_width / window_height
-			local video_ratio = video_width / video_height
-			if window_ratio > video_ratio then
-				-- when i try to fit the video, it overflows, when i try to overflow, it... but it works, so it's good
-				video_height = window_height
-				video_width = video_height * video_ratio
-			elseif window_ratio < video_ratio then
-				video_width = window_width
-				video_height = video_width / video_ratio
-			else
-				return
-			end
-		elseif video_width < window_width and video_height > window_height then
-			mp.set_property("video-unscaled", "yes")
-			local video_ratio = video_width / video_height
-			video_width = window_width /1.5 -- magical threshold, i don't know why it can't scale any larger
-			video_height = video_width / video_ratio
-		end
-		local scale = window_width / video_width - 1
-		local scaled_video_height = video_height * (1+scale)
-		local pan_y = (scaled_video_height - window_height) / (2 * scaled_video_height) 
-		mp.set_property("video-pan-y", pan_y)
-		mp.set_property("video-zoom", scale)
-		mp.osd_message(string.format(
-		"Video: %dx%d, Window: %dx%d\nScale: %.3f\nScaled height: %.1f\nPan Y: %.3f",
-		video_width, video_height, window_width, window_height,
-		scale, scaled_video_height, pan_y), 4)
-	end},
-	{"t", function()
-		local window_width, window_height = mp.get_osd_size()
-		local video_width = mp.get_property_number("width")
-		local video_height = mp.get_property_number("height")
-		if window_width >= video_width and window_height >= video_height then
-			mp.set_property("video-unscaled", "no")
-			local window_ratio	= window_width / window_height
-			local video_ratio = video_width / video_height
-			if window_ratio > video_ratio then
-				-- when i try to fit the video, it overflows, when i try to overflow, it... but it works, so it's good
-				video_height = window_height
-				video_width = video_height * video_ratio
-			elseif window_ratio < video_ratio then
-				video_width = window_width
-				video_height = video_width / video_ratio
-			else
-				return
-			end
-		elseif video_width < window_width and video_height > window_height then
-			mp.set_property("video-unscaled", "yes")
-			local video_ratio = video_width / video_height
-			video_width = window_width /1.5 -- magical threshold, i don't know why it can't scale any larger
-			video_height = video_width / video_ratio
-		end
-		local scale = window_width / video_width - 1
-		local scaled_video_height = video_height * (1+scale)
-		local pan_y = (scaled_video_height - window_height) / (2 * scaled_video_height) 
-		mp.set_property("video-pan-y", pan_y)
-		mp.set_property("video-zoom", scale)
-		mp.osd_message(string.format(
-		"Video: %dx%d, Window: %dx%d\nScale: %.3f\nScaled height: %.1f\nPan Y: %.3f",
-		video_width, video_height, window_width, window_height,
-		scale, scaled_video_height, pan_y), 4)
-	end},
+	{"F", fitwidth_topalign},
+	{"t", fitwidth_topalign},
 	{"MBTN_MID", "set video-zoom 0 ; set video-pan-x 0 ; set video-pan-y 0 ; set video-rotate 0 ; show-text \"Reset Transformation\" ; set video-unscaled no"},
 	{"WHEEL_LEFT","add video-pan-x 0.05"},
 	{"WHEEL_RIGHT","add video-pan-x -0.05"},
